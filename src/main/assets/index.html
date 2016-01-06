@@ -1,152 +1,115 @@
+<!doctype html>
 <html>
-<head>
-<style type="text/css">
-	body {cursor:auto;margin:0; padding:0; position:absolute; overflow:hidden; background:#000; left:0; top:0; width:100%; height:100%;}
-	img {position:absolute;left:-1000;}
-</style>
-
-<!-- script evolved from the work done 
-     by http://www.dhteumeuleu.com"-->
-
-<script type="text/javascript">
-obj   = new Object();
-xm  = ym = 0;
-K   = 0;
-M   = 1;
-img = 0;
-
-document.onmousemove = function(e)
-{
-	if (window.event) e = window.event;
-	xm = (e.x || e.clientX);
-	ym = (e.y || e.clientY);
-	M  = 0;
-}
-
-function resize() 
-{
-	nx = document.body.offsetWidth;
-	ny = document.body.offsetHeight;
-}
-
-onresize = resize;
-
-objConstructor = function(N,img,imgS) {
-	this.N  = N;
-	this.W  = (N==0)?0:img.width/2;
-	this.x  = xm/2;
-	this.y  = -this.W+1;
-	this.vx = -5;
-	this.vy = 0;
-	this.O = document.createElement("img");
-	this.O.src = img.src;
-	this.O.style.zIndex = 1000-this.W;
-      document.getElementById("SF").appendChild(this.O);
-}
-
-function mainloop(){
-	for(i=M;i<K;i++){
-		with(obj[i])
-		{
-			/* interactions among balls */
-			for(j=i+1;j<K;j++)
-			{
-        		    dx = x-obj[j].x;
-        		    dy = y-obj[j].y;
-        		    d1 = Math.sqrt(dx*dx+dy*dy);
-			    d  = (W+obj[j].W)-d1;
-			    if(d>0)  /* collide */
-			    {
-				ang = Math.atan2(dy, dx);
-				dx = d * Math.cos(ang);
-				dy = d * Math.sin(ang);
-
-				
-				if(W>obj[j].W || i==0) 
-				{
-                           /* hitted obj by other balls or a mouse */
-				   obj[j].x  -= dx;
-        			   obj[j].y  -= dy;
-			 	   obj[j].vx -= dx;
-       		         obj[j].vy -= dy;
-                           /* hitting obj */
-			  	   x  += dx;  
-				   y  += dy;
-				   vx += dx;
-				   vy += dy;
-				} 
-
-				/* hitting obj */
-				/*else     
-				{
-			  	   x  += dx;  
-				   y  += dy;
-				   vx += dx;
-				   vy += dy;
+	<head>
+		<script type="text/javascript" src="jquery-1.11.3.min.js"></script>
+		<script type="text/javascript">
+			function doLog() {
+				if(typeof(console) !== 'undefined') {
+					console.log.apply(console, arguments);
 				}
-				*/
+			}
+			
+			$(window).scroll(function() {
+				if ( $(window).scrollTop() > 10 ) {
+					$('a.back-to-top').fadeIn('slow');
+				} else {
+					$('a.back-to-top').fadeOut('slow');
+				}
+			});
+
+			function play(el, filename) {
+				var a = document.createElement('audio');
+				if(!el.classList.contains('playing')) {
+					
+					a.src = filename;
+					a.addEventListener('play', function() {
+						doLog('start play', filename);
+						$(el).find('.progressbar').css('width', '0');
+						$(el)
+.addClass('playing');
+					});
+				
+					a.addEventListener('ended', function() {
+						doLog('end play', filename);
+						playing = false;
+						$(el).removeClass('playing');
+					});
+
+					a.addEventListener('timeupdate', function() {
+						if(a.duration) {
+							var percent = a.currentTime / (a.duration * 0.01);
+							console.log(percent);
+							$(el).find('.progressbar').css('width', Math.round(percent)+'%');
+						}
+					});
+					a.play();
+				}
+			}
+		</script>
+		<style type="text/css" >
+				body {
+					margin:0;
+					padding:0;
+					width:100%;
+				}
+				
+				.sound{
+					float:left;
+					width:100px;
+					height:100px;
+					background:url('music.png') no-repeat center 100%;
+					border:1px solid lightgray;
+					border-radius:10px;
+					margin:20px;
+				}
+				
+				.sound.playing {
+					filter: grayscale(100%);
+				}
+				
+				.sound.playing .progressbar {
+					 width:0%;
+					 height:10px;
+					 background:black;
+					 margin-top:50%;
+					 opacity:.75;
 			    }
-			}
-
-			/* behavior of each ball */
-			vy+=W/100;
-			y+=vy;
-			//if(y<W) vy=-vy,y=W;   //top
-			if(y>ny-W)vy=-vy,y=ny-W;  //bottom 
-			x+=vx;
-			if(x<W)x=W,vx=-vx;        //left
-			else if(x>nx-W)x=nx-W,vx=-vx;   //right
-			vx*=.99;
-			vy*=.99;
-			if(N==0) { //mouse as an object
-				x=xm,y=ym,vx=0,vy=0;
-			}
-			else{   
-				O.style.left = x-W;
-				O.style.top  = y-W;
-			}
-		}
-	}
-	M = 1;
-	setTimeout(mainloop,16);
-}
-
-function createObj(id){
-	obj[K] = new objConstructor(K++,img[id]);
-}
-
-onload = function() {
-	img = document.getElementById("images").getElementsByTagName("img");
-	resize();
-	xm = nx / 2;
-	ym = -1000;
-	createObj(0);
-	setTimeout("createObj(0)",500);
-	for(var i=0;i<30;i++) {
-		setTimeout("createObj("+(1+(i%(img.length-1)))+")",(i+10)*500);
-	}
-	mainloop();
-}
-</script>
-
-</head>
-
-<body>
-
-<div id="SF" 
-     style="left:0px;position:absolute;top:0px">
-</div>
-
-<div id="images" style="visibility:hidden;">
-<img src="./images/sphere100.gif">
-<img src="./images/sphere70.gif">
-<img src="./images/sphere50.gif">
-<IMG src="./images/sphere30.gif">
-<IMG src="./images/sphere20.gif">
-<IMG src="./images/sphere10.gif">
-<IMG src="./images/sphere5.gif">
-
-</div>
-
-</body>
+				
+				a.back-to-top {
+					display: none;
+					width: 128px;
+					height: 128px;
+					text-indent: -9999px;
+					position: fixed;
+					z-index: 999;
+					right: 20px;
+					bottom: 20px;
+					background: url("up-arrow.png") no-repeat center 30%;
+				}
+				
+		</style>
+	</head>
+	<body onload="">
+		<div class="wrapper">
+			<div class="sound" onclick="play(this, 'philippe.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'a-ce-jour.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'african-americany.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'je-sais.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'mon-frere.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'mourir-connard.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'payer.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'petit-con.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'philippe.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'qui-a-tue.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'rien-a-foutre.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'salaud.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'sale-encule.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'ta-gueule.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'vas-y.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'vengeance.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'veux-ce-connard.ogg');"><div class="progressbar"></div></div>
+			<div class="sound" onclick="play(this, 'viens-ici.ogg');"><div class="progressbar"></div></div>
+		</div>
+		<a onclick="javascript:$('html,body').animate({ scrollTop: 0 }, 'slow');" class="back-to-top">Back to Top</a>
+	</body>
 </html>

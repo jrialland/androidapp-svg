@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5+'
+    }
+}
+
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion "19.1.0"
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 21
+        versionCode 1
+        versionName "1.0"
+    }
+    
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        
+        release {
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            //signingConfig signingConfigs.release
+        }
+    }
+
+    dexOptions {
+        incremental true
+    }
+    
+    lintOptions {
+        disable 'SetJavaScriptEnabled'
+    }
+    
+}
+
+dependencies {
+        compile fileTree(dir: 'libs', include: ['*.jar'])
+		compile 'com.android.support:appcompat-v7:21+'
+		compile 'com.android.support:support-v4:21+'
+        compile 'com.google.android.gms:play-services-ads:8.4.0'
+}
